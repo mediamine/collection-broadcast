@@ -1,0 +1,12 @@
+{
+  "name": "collection-broadcast",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/mediamine/collection-broadcast.git",
+  "author": "MohsinKhan-MediaMine <mohsin@mediamine.co.nz>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "modules/*"
+  ]
+}

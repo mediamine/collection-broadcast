@@ -1,0 +1,24 @@
+name: mediamine-collection
+services:
+  mediamine-collection-broadcast-db:
+    image: postgres:16.4
+    container_name: mediamine-collection-broadcast-db
+    ports:
+      - 5435:5432
+    environment:
+      POSTGRES_DB: mediamine
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pgdata-collection-broadcast:/var/lib/postgresql/data
+      # - ./setup/db:/docker-entrypoint-initdb.d/
+    networks:
+      - mediamine-network
+    restart: always
+
+volumes:
+  pgdata-collection-broadcast:
+
+networks:
+  mediamine-network:
+    driver: bridge
