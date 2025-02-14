@@ -28,7 +28,7 @@ export class AssemblyAiService {
   }
 
   async transcribe({ audio }: { audio: string }): Promise<{ text: string }> {
-    this.logger.debug(`Closing the browser instance`);
+    this.logger.debug(`Transcribing the audio at: ${audio}`);
     const transcript = await this.assemblyAiClient.transcripts.transcribe({ audio });
     return { text: transcript.text };
   }

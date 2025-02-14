@@ -16,4 +16,5 @@ model audio_source {
   audio_source      String   @db.VarChar
   page_text         String?  @db.VarChar
   audio_source_text String?  @db.VarChar
+  news_item_fk      BigInt   @db.BigInt
 }

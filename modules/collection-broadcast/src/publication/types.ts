@@ -3,7 +3,7 @@ export interface AuthenticateFnProps {
 }
 
 export interface ScanFnProps {
-  page: Record<string, any>;
+  page?: Record<string, any>;
   url: string;
 }
 
@@ -11,6 +11,7 @@ export interface ArticleLinkProps {
   link: string;
   title: string;
   description: string;
+  audioSource?: string;
 }
 
 export interface ArticleProps {
