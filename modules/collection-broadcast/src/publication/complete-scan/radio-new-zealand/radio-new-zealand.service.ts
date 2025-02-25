@@ -20,19 +20,32 @@ export class RadioNewZealandService implements ScannerProps {
 
     // Wait for page to load
     await page.locator('#documentContent').waitFor();
-    await page.locator('div.episode-summaries ul li > a').first().waitFor();
+    await page.locator('div.programme-stories ul li').first().waitFor();
 
     // Find all articles under each sub-section
-    const articles = [...(await page.locator('div.episode-summaries ul li > a').all())];
+    const articles = [...(await page.locator('div.programme-stories ul li').all())];
 
     // Extract & return all links, titles & descriptions for each article
     return [
       ...(await Promise.all(
-        articles.map(async (article) => ({
-          link: `${url}${await article.getAttribute('href')}`,
-          title: ((await article.textContent()) as string).replace(/^\s*\d{1,2}:\d{2}\s*/, ''),
-          description: ''
-        }))
+        articles.map(async (article) => {
+          const title = await article.locator('p').first().textContent();
+
+          const media = await article.locator('rnz-queue-media').getAttribute('media');
+          let audioSource = null;
+          try {
+            audioSource = JSON.parse(media).audioSrc;
+          } catch (e) {
+            this.logger.error(e.message);
+          }
+
+          return {
+            link: `${url}${await article.locator('a').getAttribute('href')}`,
+            title,
+            description: title,
+            audioSource
+          };
+        })
       ))
     ];
   }
@@ -52,27 +65,7 @@ export class RadioNewZealandService implements ScannerProps {
   }
 
   async scanArticle({ page, url }: ScanFnProps): Promise<ArticleProps> {
-    await page.goto(url);
-    await page.locator('div.article').waitFor();
-
-    // Article Description
-    const media = await page.locator('rnz-queue-media').getAttribute('media');
-
-    let audioSource = null;
-    try {
-      audioSource = JSON.parse(media).audioSrc;
-    } catch (e) {
-      console.error(e.message);
-    }
-
-    // Article Text
-    const textContents: Array<string> = ([] as Array<string>).concat(await page.locator('div.article__summary p').allTextContents());
-
-    return {
-      description: textContents.join(''),
-      audioSource,
-      text: textContents.join('')
-    };
+    throw new Error('Method not implemented.');
   }
 
   async logout({}: AuthenticateFnProps) {}

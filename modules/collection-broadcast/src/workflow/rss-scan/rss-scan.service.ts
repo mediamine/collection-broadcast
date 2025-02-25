@@ -153,11 +153,8 @@ export class RssScanService {
       });
 
       this.logger.debug('Logging out the browser session.');
-      // await feedScraperService.logout({ page });
     } catch (e) {
-      throw new Error(e);
-    } finally {
-      // await this.playwrightService.closeBrowser();
+      this.logger.error(e.message);
     }
   }
 }
