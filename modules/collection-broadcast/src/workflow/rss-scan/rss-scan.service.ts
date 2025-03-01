@@ -101,7 +101,7 @@ export class RssScanService {
         ...(await this.prismaService.news_item.findMany({ where: { ...existingNewsItemsQuery, page_text: null } }))
       ];
 
-      let count = 0; //
+      let count = 0; // TODO: remove once live
 
       this.logger.log(`Scraping article pages for News Items: [${existingNewsItemHashWithNoPageText.map((ni) => ni.id)}]`);
 
@@ -115,11 +115,11 @@ export class RssScanService {
         });
 
         if (
-          count < 5 && //
+          count < 5 && // TODO: remove once live
           audioSource &&
           audioSource.audio_source
         ) {
-          count++; //
+          count++; // TODO: remove once live
           try {
             const audioSourceText = (await this.assemblyAiService.transcribe({ audio: audioSource.audio_source }))?.text;
 

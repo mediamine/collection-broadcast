@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BrowserContext, defineConfig } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
 import { AssemblyAI } from 'assemblyai';
+import { ASSEMBLY_AI_API_KEY } from 'src/constant';
 import { WinstonLoggerService } from 'src/logger';
 
 defineConfig({
@@ -11,7 +12,6 @@ defineConfig({
 @Injectable()
 export class AssemblyAiService {
   private assemblyAiClient: AssemblyAI;
-  private context: BrowserContext;
 
   constructor(
     private configService: ConfigService,
@@ -22,9 +22,14 @@ export class AssemblyAiService {
 
   async initialize() {
     this.logger.debug('Starting an AssemblyAI instance.');
-    this.assemblyAiClient = await new AssemblyAI({
-      apiKey: '3026aabe124944d787aed8df054ff358'
-    });
+    const apiKey = this.configService.get<string>(ASSEMBLY_AI_API_KEY);
+    if (!apiKey) {
+      const errorMessage = `${ASSEMBLY_AI_API_KEY} is undefined`;
+      this.logger.error(errorMessage);
+      return Promise.reject(errorMessage);
+    }
+
+    this.assemblyAiClient = await new AssemblyAI({ apiKey });
   }
 
   async transcribe({ audio }: { audio: string }): Promise<{ text: string }> {
