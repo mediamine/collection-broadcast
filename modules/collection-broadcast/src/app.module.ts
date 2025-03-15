@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppService } from './app.service';
 import { PrismaCollectionBroadcastService, PrismaService } from './db';
 import { WinstonLoggerService } from './logger';
-import { CompleteScanModule, RssScanModule } from './workflow';
+import { CompleteScanModule, CompleteScanWithTranscriptionModule, RssScanModule } from './workflow';
 
 @Module({
   imports: [
@@ -13,6 +13,7 @@ import { CompleteScanModule, RssScanModule } from './workflow';
       envFilePath: ['.env', '.env.dev', '.env.prod']
     }),
     CompleteScanModule,
+    CompleteScanWithTranscriptionModule,
     RssScanModule
   ],
   controllers: [],

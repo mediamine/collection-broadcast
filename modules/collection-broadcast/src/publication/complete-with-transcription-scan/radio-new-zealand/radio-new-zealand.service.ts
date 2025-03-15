@@ -59,12 +59,12 @@ export class RadioNewZealandService implements ScannerProps {
 
       return newsItems;
     } catch (e: any) {
-      console.error(e.message);
+      this.logger.error(e.message);
       return [];
     }
   }
 
-  async scanArticle({ page, url }: ScanFnProps): Promise<ArticleProps> {
+  async scanArticle({}: ScanFnProps): Promise<ArticleProps> {
     throw new Error('Method not implemented.');
   }
 

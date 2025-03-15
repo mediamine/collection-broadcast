@@ -1,1 +1,1 @@
-export { RadioNewZealandService } from './radio-new-zealand/radio-new-zealand.service';
+export { NewstalkZBService } from './newstalk-zb/newstalk-zb.service';

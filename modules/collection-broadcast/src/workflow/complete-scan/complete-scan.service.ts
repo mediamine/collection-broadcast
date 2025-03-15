@@ -4,10 +4,10 @@ import hashIt from 'hash-it';
 import { uniqBy } from 'lodash';
 import { DateTime } from 'luxon';
 import { PlaywrightService } from 'src/browser';
-import { AssemblyAiService } from 'src/browser/assembly-ai/assembly-ai.service';
-import { PrismaCollectionBroadcastService, PrismaService } from 'src/db';
+import { PrismaService } from 'src/db';
 import { WinstonLoggerService } from 'src/logger';
 import { ScannerProps } from 'src/publication/types';
+import { isCompleteScanExcludedConditions } from './excluded-conditions';
 
 @Injectable()
 export class CompleteScanService {
@@ -15,9 +15,7 @@ export class CompleteScanService {
     private readonly moduleRef: ModuleRef,
     private logger: WinstonLoggerService,
     private prismaService: PrismaService,
-    private prismaCollectionBroadcastService: PrismaCollectionBroadcastService,
-    private playwrightService: PlaywrightService,
-    private assemblyAiService: AssemblyAiService
+    private playwrightService: PlaywrightService
   ) {
     this.logger.setContext(CompleteScanService.name);
   }
@@ -25,8 +23,6 @@ export class CompleteScanService {
   async scan({ feed: { id, name, url }, feedScraper }): Promise<void> {
     try {
       this.logger.log(`Invoked ${this.scan.name} with ${JSON.stringify({ id, name, url })} of type: ${feedScraper}`);
-
-      this.assemblyAiService.initialize();
 
       this.logger.log(`Navigating to ${url}`);
       const { page } = await this.playwrightService.openBrowser({ url });
@@ -45,30 +41,10 @@ export class CompleteScanService {
 
         // If no existing duplicate item is found
         if (existingNewsItemHash.length === 0) {
-          const newsItemId = BigInt(newsItemMaxId.id ?? 0) + BigInt(index + 1);
-
-          const audioSourcePreExistingForNewsItem = await this.prismaCollectionBroadcastService.audio_source.findFirst({
-            where: { news_item_fk: newsItemId }
-          });
-
-          if (!audioSourcePreExistingForNewsItem) {
-            const audioSource = $newsItem.audioSource;
-            if (audioSource) {
-              await this.prismaCollectionBroadcastService.audio_source.create({
-                data: {
-                  audio_source: audioSource,
-                  audio_source_text: '',
-                  page_text: $newsItem.description,
-                  news_item_fk: newsItemId
-                }
-              });
-            }
-          }
-
           const date = DateTime.now().toISO();
           await this.prismaService.news_item.create({
             data: {
-              id: newsItemId,
+              id: BigInt(newsItemMaxId.id ?? 0) + BigInt(index + 1),
               link: $newsItem.link,
               title: $newsItem.title,
               description: $newsItem.description,
@@ -91,48 +67,19 @@ export class CompleteScanService {
         ...(await this.prismaService.news_item.findMany({ where: { ...existingNewsItemsQuery, page_text: null } }))
       ];
 
-      let count = 0; // TODO: remove once live
-
       this.logger.log(`Scraping article pages for News Items: [${existingNewsItemHashWithNoPageText.map((ni) => ni.id)}]`);
-
       for (const [, newsItem] of existingNewsItemHashWithNoPageText.entries()) {
-        const { id } = newsItem;
-
-        const audioSource = await this.prismaCollectionBroadcastService.audio_source.findFirst({
-          where: {
-            news_item_fk: id
-          }
-        });
-
-        if (
-          count < 5 && // TODO: remove once live
-          audioSource &&
-          audioSource.audio_source
-        ) {
-          count++; // TODO: remove once live
-
+        const { id, link } = newsItem;
+        if (link && isCompleteScanExcludedConditions(link)) {
           try {
-            const audioSourceText = (await this.assemblyAiService.transcribe({ audio: audioSource.audio_source }))?.text;
-
-            this.logger.log(
-              `Persisting Audio Source Text: ${audioSourceText.slice(0, 15)}...${audioSourceText.slice(-15)} for News Item: ${id}`
-            );
-            await this.prismaCollectionBroadcastService.audio_source.update({
-              data: {
-                audio_source_text: audioSourceText
-              },
-              where: {
-                id: audioSource.id
-              }
-            });
-
-            this.logger.log(`Persisting Page Text: ${audioSourceText.slice(0, 15)}...${audioSourceText.slice(-15)} for News Item: ${id}`);
+            const { text } = await feedScraperService.scanArticle({ page, url: link });
+            this.logger.log(`Persisting Page Text: ${text.slice(0, 15)}...${text.slice(-15)} for News Item: ${id}`);
             await this.prismaService.news_item.update({
               where: { id },
-              data: { page_text: audioSourceText }
+              data: { page_text: text }
             });
           } catch (e) {
-            this.logger.error(`Error scanning text for ${audioSource.audio_source}. Exception: ${e.message}`);
+            this.logger.error(`Error scanning text for ${link}. Exception: ${e.message}`);
           }
         }
       }

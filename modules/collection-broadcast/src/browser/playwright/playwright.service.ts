@@ -37,6 +37,7 @@ export class PlaywrightService {
     const page: Page = await this.context.newPage();
     page.setDefaultNavigationTimeout(60000);
     page.setDefaultTimeout(60000);
+    page.setExtraHTTPHeaders({ 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' });
 
     await page.goto(url);
 

@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
-import { PlaywrightService } from 'src/browser';
-import { AssemblyAiService } from 'src/browser/assembly-ai/assembly-ai.service';
-import { RssParserService } from 'src/browser/rss-parser/rss-parser.service';
+import { AssemblyAiService, PlaywrightService, RssParserService } from 'src/browser';
 import { NEWS_ITEM_SOURCE_RADIO_NEW_ZEALAND_RSS } from 'src/constant/feedScrapers';
 import { PrismaCollectionBroadcastService, PrismaService } from 'src/db';
 import { WinstonLoggerService } from 'src/logger';

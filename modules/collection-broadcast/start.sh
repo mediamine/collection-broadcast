@@ -10,6 +10,8 @@ for i in {1..10}
         echo "start iteration: $i";
         WORKFLOW=WORKFLOW_COMPLETE_SCAN yarn start;
         sleep 3600;
+        WORKFLOW=WORKFLOW_COMPLETE_WITH_TRANSCRIPTION_SCAN yarn start;
+        sleep 3600;
         WORKFLOW=WORKFLOW_RSS_SCAN yarn start;
         sleep 3600;
         echo "end iteration: $i";

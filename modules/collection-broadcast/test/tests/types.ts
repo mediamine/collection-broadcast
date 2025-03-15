@@ -16,5 +16,5 @@ export interface ArticleLinkProps {
 export interface ArticleProps {
   text: string;
   description?: string;
-  audioSource: string;
+  audioSource?: string;
 }

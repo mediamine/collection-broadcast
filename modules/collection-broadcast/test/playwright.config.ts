@@ -27,7 +27,7 @@ export default defineConfig({
           <MsTeamsReporterOptions>{
             webhookUrl: process.env.TESTS_WEBHOOK_URL,
             webhookType: 'powerautomate',
-            title: 'Playwright Test Results for Web Scraper collection jobs',
+            title: 'Playwright Test Results for Broadcast collection jobs',
             mentionOnFailure: process.env.TESTS_MENTION_ON_FAILURE,
             mentionOnFailureText: 'Hi {mentions}, please verify tests failing for one or more scrapers.',
             enableEmoji: true

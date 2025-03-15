@@ -3,21 +3,23 @@ import { ModuleRef } from '@nestjs/core';
 import hashIt from 'hash-it';
 import { uniqBy } from 'lodash';
 import { DateTime } from 'luxon';
+import { PlaywrightService } from 'src/browser';
 import { AssemblyAiService } from 'src/browser/assembly-ai/assembly-ai.service';
 import { PrismaCollectionBroadcastService, PrismaService } from 'src/db';
 import { WinstonLoggerService } from 'src/logger';
 import { ScannerProps } from 'src/publication/types';
 
 @Injectable()
-export class RssScanService {
+export class CompleteScanWithTranscriptionService {
   constructor(
     private readonly moduleRef: ModuleRef,
     private logger: WinstonLoggerService,
     private prismaService: PrismaService,
     private prismaCollectionBroadcastService: PrismaCollectionBroadcastService,
+    private playwrightService: PlaywrightService,
     private assemblyAiService: AssemblyAiService
   ) {
-    this.logger.setContext(RssScanService.name);
+    this.logger.setContext(CompleteScanWithTranscriptionService.name);
   }
 
   async scan({ feed: { id, name, url }, feedScraper }): Promise<void> {
@@ -26,14 +28,17 @@ export class RssScanService {
 
       this.assemblyAiService.initialize();
 
+      this.logger.log(`Navigating to ${url}`);
+      const { page } = await this.playwrightService.openBrowser({ url });
+
       const feedScraperService = this.moduleRef.get<ScannerProps>(feedScraper, { strict: false });
+      feedScraperService.authenticate({ page });
 
       this.logger.debug('Scraping home pages for links.');
-      const $newsItems = uniqBy(await feedScraperService.scanHome({ url }), 'link');
+      const $newsItems = uniqBy(await feedScraperService.scanHome({ page, url }), 'link');
 
       this.logger.debug('Find highest newsItem id in db.');
       const newsItemMaxId = await this.prismaService.news_item.findFirstOrThrow({ orderBy: { id: 'desc' } });
-
       for (const [index, $newsItem] of $newsItems.entries()) {
         const hashcode = hashIt(id.toString() + $newsItem.title + $newsItem.link + $newsItem.description);
         const existingNewsItemHash = await this.prismaService.news_item.findMany({ where: { hashcode } });
@@ -46,22 +51,13 @@ export class RssScanService {
             where: { news_item_fk: newsItemId }
           });
 
-          // TODO: removing the transcribing activity from the initial news item creation
-          // let audioSourceText = '';
-
           if (!audioSourcePreExistingForNewsItem) {
             const audioSource = $newsItem.audioSource;
             if (audioSource) {
-              // TODO: removing the transcribing activity from the initial news item creation
-              // audioSourceText = (await this.assemblyAiService.transcribe({ audio: audioSource }))?.text;
-              // this.logger.log(
-              //   `Persisting Audio Source Text: ${audioSourceText.slice(0, 15)}...${audioSourceText.slice(-15)} for News Item: ${newsItemId}`
-              // );
-
               await this.prismaCollectionBroadcastService.audio_source.create({
                 data: {
                   audio_source: audioSource,
-                  audio_source_text: '', // audioSourceText,
+                  audio_source_text: '',
                   page_text: $newsItem.description,
                   news_item_fk: newsItemId
                 }
@@ -114,6 +110,7 @@ export class RssScanService {
           audioSource.audio_source
         ) {
           count++; // TODO: remove once live
+
           try {
             const audioSourceText = (await this.assemblyAiService.transcribe({ audio: audioSource.audio_source }))?.text;
 
@@ -145,8 +142,13 @@ export class RssScanService {
         where: { id },
         data: { last_download_date: new Date() }
       });
+
+      this.logger.debug('Logging out the browser session.');
+      await feedScraperService.logout({ page });
     } catch (e) {
       this.logger.error(e.message);
+    } finally {
+      await this.playwrightService.closeBrowser();
     }
   }
 }
