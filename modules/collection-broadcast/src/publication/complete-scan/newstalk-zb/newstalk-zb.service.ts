@@ -20,16 +20,19 @@ export class NewstalkZBService implements ScannerProps {
     await page.locator('[data-test="podcast-episode-card"]').first().waitFor();
 
     // Find all articles under each sub-section
+    await page.getByRole('button', { name: 'See More' }).click();
     const articles = [...(await page.locator('[data-test="podcast-episode-card"] [data-test="podcast-episode-name"] a').all())];
 
     // Extract & return all links, titles & descriptions for each article
     return [
       ...(await Promise.all(
-        articles.map(async (article) => ({
-          link: `${url}${await article.getAttribute('href')}`,
-          title: await article.textContent(),
-          description: ''
-        }))
+        articles
+          .filter(async (article) => await article.isVisible())
+          .map(async (article) => ({
+            link: `${url}${await article.getAttribute('href')}`,
+            title: await article.textContent(),
+            description: ''
+          }))
       ))
     ];
   }
@@ -54,7 +57,8 @@ export class NewstalkZBService implements ScannerProps {
 
     // Article Text
     const textContents: Array<string> = ([] as Array<string>).concat(
-      await page.locator('div[itemprop="podcastDescription"] p').allTextContents()
+      await page.locator('div[itemprop="podcastDescription"] p').allTextContents(),
+      await page.locator('div#transcription span').allTextContents()
     );
 
     return {

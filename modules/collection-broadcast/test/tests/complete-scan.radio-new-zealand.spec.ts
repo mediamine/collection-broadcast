@@ -62,7 +62,7 @@ async function scanArticle({ page, url }: ScanFnProps): Promise<ArticleProps> {
   try {
     audioSource = JSON.parse(media).audioSrc;
   } catch (e) {
-    //
+    this.logger.error(e.message);
   }
 
   // Article Text
