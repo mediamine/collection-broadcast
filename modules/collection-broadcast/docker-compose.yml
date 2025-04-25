@@ -19,6 +19,18 @@ services:
       - mediamine-network
     restart: always
 
+  mediamine-collection-broadcast-rabbit:
+    image: rabbitmq:3-management
+    container_name: mediamine-collection-broadcast-rabbit
+    hostname: mediamine-collection-broadcast-rabbit
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbitmq
+      RABBITMQ_DEFAULT_PASS: rabbitmq
+    ports:
+      - '15672:15672' # RabbitMQ management UI
+      - '5672:5672' # RabbitMQ messaging port
+    restart: unless-stopped
+
 volumes:
   pgdata-collection-broadcast:
 
