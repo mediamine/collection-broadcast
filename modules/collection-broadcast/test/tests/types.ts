@@ -5,6 +5,7 @@ export interface AuthenticateFnProps {
 export interface ScanFnProps {
   page: Record<string, any>;
   url: string;
+  name?: string;
 }
 
 export interface ArticleLinkProps {

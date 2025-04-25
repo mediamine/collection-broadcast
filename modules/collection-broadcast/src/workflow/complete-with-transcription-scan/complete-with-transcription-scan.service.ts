@@ -32,10 +32,9 @@ export class CompleteScanWithTranscriptionService {
       const { page } = await this.playwrightService.openBrowser({ url });
 
       const feedScraperService = this.moduleRef.get<ScannerProps>(feedScraper, { strict: false });
-      feedScraperService.authenticate({ page });
 
       this.logger.debug('Scraping home pages for links.');
-      const $newsItems = uniqBy(await feedScraperService.scanHome({ page, url }), 'link');
+      const $newsItems = uniqBy(await feedScraperService.scanHome({ page, url, name }), 'link');
 
       this.logger.debug('Find highest newsItem id in db.');
       const newsItemMaxId = await this.prismaService.news_item.findFirstOrThrow({ orderBy: { id: 'desc' } });
@@ -142,9 +141,6 @@ export class CompleteScanWithTranscriptionService {
         where: { id },
         data: { last_download_date: new Date() }
       });
-
-      this.logger.debug('Logging out the browser session.');
-      await feedScraperService.logout({ page });
     } catch (e) {
       this.logger.error(e.message);
     } finally {

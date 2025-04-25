@@ -12,7 +12,9 @@ export class RadioNewZealandService implements ScannerProps {
     this.logger.setContext(RadioNewZealandService.name);
   }
 
-  async authenticate({}: AuthenticateFnProps) {}
+  async authenticate({}: AuthenticateFnProps) {
+    throw new Error('Method not implemented.');
+  }
 
   async getLinks({ page, url }: ScanFnProps): Promise<Array<ArticleLinkProps>> {
     // TODO: temp. hardcoding till a better solution is found
@@ -68,5 +70,7 @@ export class RadioNewZealandService implements ScannerProps {
     throw new Error('Method not implemented.');
   }
 
-  async logout({}: AuthenticateFnProps) {}
+  async logout({}: AuthenticateFnProps) {
+    throw new Error('Method not implemented.');
+  }
 }
