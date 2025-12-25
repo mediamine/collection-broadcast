@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import {
   FEEDS_TO_IDS_COMPLETE_LIVE_AUDIO_SCAN,
   FEEDS_TO_IDS_COMPLETE_SCAN,
-  FEEDS_TO_IDS_COMPLETE_WITH_TRANSCRIPTION_SCAN,
   FEEDS_TO_IDS_RSS_SCAN,
   WORKFLOW,
   WORKFLOW_COMPLETE_LIVE_AUDIO_SCAN,
@@ -13,7 +12,7 @@ import {
 } from './constant';
 import { PrismaService } from './db';
 import { WinstonLoggerService } from './logger';
-import { CompleteLiveAudioScanService, CompleteScanService, CompleteScanWithTranscriptionService, RssScanService } from './workflow';
+import { CompleteLiveAudioScanService, CompleteScanService, RssScanService } from './workflow';
 
 @Injectable()
 export class AppService {
@@ -23,7 +22,7 @@ export class AppService {
     private prismaService: PrismaService,
     private completeScanService: CompleteScanService,
     private completeLiveAudioScanService: CompleteLiveAudioScanService,
-    private completeScanWithTranscriptionService: CompleteScanWithTranscriptionService,
+    // private completeScanWithTranscriptionService: CompleteScanWithTranscriptionService, // Disabled for now
     private rssScanService: RssScanService
   ) {
     this.logger.setContext(AppService.name);
@@ -92,6 +91,7 @@ export class AppService {
         break;
 
       case WORKFLOW_COMPLETE_WITH_TRANSCRIPTION_SCAN:
+        /** Disabled for now
         try {
           const feedsToIdsCompleteWithTranscriptionScan: Record<string, Array<string>> = JSON.parse(
             this.configService.get<string>(FEEDS_TO_IDS_COMPLETE_WITH_TRANSCRIPTION_SCAN) ?? '{}'
@@ -117,6 +117,7 @@ export class AppService {
         } catch (e) {
           this.logger.error(`Error parsing feed list: ${FEEDS_TO_IDS_COMPLETE_WITH_TRANSCRIPTION_SCAN}. ${e.message}`);
         }
+        */
         break;
 
       case WORKFLOW_RSS_SCAN:
