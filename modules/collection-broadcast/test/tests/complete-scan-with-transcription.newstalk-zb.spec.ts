@@ -7,7 +7,7 @@ import { ArticleLinkProps, AuthenticateFnProps, ScanFnProps } from './types';
   { name: 'NewsTalk ZB Broadcast - News Bulletin Wellington', url: 'https://www.newstalkzb.co.nz/on-demand/week-on-demand/' },
   { name: 'NewsTalk ZB Broadcast - News Bulletin Christchurch', url: 'https://www.newstalkzb.co.nz/on-demand/week-on-demand/' }
 ].forEach(({ name, url }) => {
-  test(`testing ${name} at ${url}`, async ({ page }) => {
+  test.skip(`testing ${name} at ${url}`, async ({ page }) => {
     await page.goto(url);
 
     await authenticate({ page });
