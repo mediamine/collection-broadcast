@@ -10,7 +10,14 @@ BigIntPrototype.toJSON = function () {
 
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(AppModule);
+  // Run onModuleDestroy hooks (Prisma $disconnect) if the process is signalled mid-run.
+  app.enableShutdownHooks();
 
-  app.get(AppService).scrape();
+  try {
+    await app.get(AppService).scrape();
+  } finally {
+    // Triggers onModuleDestroy -> $disconnect(), releasing DB connections before exit.
+    await app.close();
+  }
 }
 bootstrap();
